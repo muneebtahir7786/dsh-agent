@@ -1,6 +1,6 @@
-FROM node:22-slim
+ FROM node:22-slim
 
-# System dependencies install karein
+# Zaroori system tools install karein
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     wget \
@@ -8,14 +8,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Architecture detect karein aur uske mutabiq ttyd download karein
+# ARM64 ya x86_64 detect karke sahi ttyd binary download karein
 RUN ARCH=$(uname -m) && \
-    echo "Architecture: $ARCH" && \
+    echo "Architecture detected: $ARCH" && \
     if [ "$ARCH" = "x86_64" ]; then \
-        echo "Downloading ttyd for x86_64"; \
         wget -q https://github.com/tsl0922/ttyd/releases/download/1.7.7/ttyd.x86_64 -O /usr/local/bin/ttyd; \
     elif [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then \
-        echo "Downloading ttyd for ARM64"; \
         wget -q https://github.com/tsl0922/ttyd/releases/download/1.7.7/ttyd.aarch64 -O /usr/local/bin/ttyd; \
     else \
         echo "Unsupported architecture: $ARCH"; \
@@ -23,11 +21,9 @@ RUN ARCH=$(uname -m) && \
     fi && \
     chmod +x /usr/local/bin/ttyd
 
-# DeepSeek Harness install karein
-RUN npm install -g @deepseek-ai/dsh
+# npm cache ke liye writable directory set karein (EACCES error se bachne ke liye)
+ENV npm_config_cache=/tmp/.npm
 
-# Port expose karein
+# DSH ko npx ke zariye chalayein taake global install ki zaroorat na pade
 EXPOSE 7860
-
-# ttyd terminal start karein
-CMD ["ttyd", "-p", "7860", "-W", "bash"]
+CMD ["npx", "-y", "@deepseek-ai/dsh", "web", "--port", "7860", "--host", "0.0.0.0"]
