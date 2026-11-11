@@ -1,4 +1,5 @@
- FROM node:22-slim
+ 
+FROM node:22-slim
 
 # Zaroori system tools install karein
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -21,9 +22,9 @@ RUN ARCH=$(uname -m) && \
     fi && \
     chmod +x /usr/local/bin/ttyd
 
-# npm cache ke liye writable directory set karein (EACCES error se bachne ke liye)
-ENV npm_config_cache=/tmp/.npm
+# DSH ka exact version install karein (taake notarget error na aaye)
+RUN npm install -g @deepseek-ai/dsh@0.2.1-rc.2
 
-# DSH ko npx ke zariye chalayein taake global install ki zaroorat na pade
+# Port expose karein aur ttyd terminal start karein
 EXPOSE 7860
-CMD ["npx", "-y", "@deepseek-ai/dsh", "web", "--port", "7860", "--host", "0.0.0.0"]
+CMD ["ttyd", "-p", "7860", "-W", "bash"]
